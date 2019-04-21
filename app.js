@@ -142,7 +142,7 @@ function CalculationPerformer(velocity) {
 function performCalculation(velocity) {
   calculation = new CalculationPerformer(velocity);
   calculation = null;
-  setImmediate(performCalculation);
+  setImmediate(performCalculation, [velocity]);
 }
 
 [1e-2,1e-1,1,1e1,1e2].forEach(function(velocity) {
