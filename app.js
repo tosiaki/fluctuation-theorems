@@ -10,7 +10,7 @@ app.set('port', process.env.PORT || 3000);
 
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-io.origins("*:*");
+io.set('origins', '*:*');
 
 var path = require('path');
 var cookieParser = require('cookie-parser');
