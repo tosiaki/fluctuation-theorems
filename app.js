@@ -8,7 +8,9 @@ var app = express();
 app.use(cors());
 app.set('port', process.env.PORT || 3000);
 
-var server = require('http').createServer(app);
+var server = app.listen(app.get('port'), function() {
+  console.log("Express server listening on port " + app.get('port'));
+});
 var io = require('socket.io')(server);
 io.set('origins', 'https://tosiaki.github.io:80');
 
