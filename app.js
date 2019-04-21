@@ -152,7 +152,7 @@ function performCalculation(velocity) {
 }
 
 velocities = [1e-2, 1e-1, 1, 1e1, 1e2];
-[1e2].forEach(function(velocity) {
+velocities.forEach(function(velocity) {
   performCalculation(velocity);
 });
 
