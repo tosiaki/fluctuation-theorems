@@ -59,7 +59,6 @@ xm=64;
 v=1e-2;
 
 maxSteps = M*5;
-deltaT = (xm-x0)/(v*M);
 
 function energy0(position) {
   return 0.5*k1*position*position-epsilon;
@@ -85,11 +84,11 @@ function W21(position) {
   return omega*Math.exp(energy0(position));
 }
 
-function state0probabilityFrom0(position) {
+function state0probabilityFrom0(position, deltaT) {
   return (W12(position)+W21(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
 }
 
-function state0probabilityFrom1(position) {
+function state0probabilityFrom1(position, deltaT) {
   return (W12(position)-W12(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
 }
 
@@ -120,14 +119,18 @@ function helmholtzFreeEnergy(position) {
 }
 
 function CalculationPerformer(velocity) {
+  deltaT = (xm-x0)/(velocity*M);
   this.totalWork = 0;
+  this.workHistory = [];
   this.state = Math.random() > n0probability;
   this.step = 0;
   while (this.step < maxSteps) {
     this.totalWork += energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1));
     this.step++;
-    this.state = Math.random() > state0probabilityFunction(this.state)(positionAtStep(this.step));
+    this.state = Math.random() > state0probabilityFunction(this.state)(positionAtStep(this.step), deltaT);
+    this.workHistory.push(this.totalWork);
   }
+  io.emit("calculationResult", { velocity: velocity, workHistory: this.workHistory, totalWork: this.totalWork });
 }
 
 function performCalculation(velocity) {
@@ -137,4 +140,10 @@ function performCalculation(velocity) {
 
 [1e-2,1e-1,1,1e1,1e2].forEach(function(velocity) {
   performCalculation(velocity);
+});
+
+io.on('connection', function(socket) {
+  var socketId = socket.id;
+  var clientIp = socket.request.connection.remoteAddress;
+  console.log('New connection from ' + clientIp);
 });
