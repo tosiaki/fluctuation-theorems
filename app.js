@@ -109,7 +109,7 @@ function positionAtStep(step) {
 }
 
 function equilibriumProbability(position) {
-  return (Math.exp(-0.5*k1*position*position-epsilon))/(Math.exp(-0.5*k1*position*position-epsilon)+Math.exp(-0.5*k2*position*position));
+  return (Math.exp(-0.5*k1*position*position+epsilon))/(Math.exp(-0.5*k1*position*position+epsilon)+Math.exp(-0.5*k2*position*position));
 }
 
 n0probability = equilibriumProbability(x0);
@@ -128,26 +128,35 @@ function CalculationPerformer(velocity) {
   this.deltaT = (xm-x0)/(velocity*M);
   this.totalWork = 0;
   this.workHistory = [];
-  this.state = Math.random() > n0probability;
+  rand = Math.random();
+  // console.log("Initial random: " + rand + ", n0probability: " + n0probability);
+  this.state = rand > n0probability;
   this.step = 0;
   while (this.step < maxSteps) {
-    this.totalWork += energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1));
+    this.totalWork += (energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1)));
     this.step++;
-    this.state = Math.random() > state0probabilityFunction(this.state)(positionAtStep(this.step), this.deltaT);
+    rand = Math.random();
+    probability = state0probabilityFunction(this.state)(positionAtStep(this.step), this.deltaT);
+    // console.log("State: " + this.state + ", Random Number: " + rand + ", Probability: " + probability + ", Position: " + positionAtStep(this.step));
+    this.state = rand > probability;
     this.workHistory.push(this.totalWork);
   }
   io.emit("calculationResult", { velocity: velocity, workHistory: this.workHistory, totalWork: this.totalWork, entropy: -this.totalWork - deltaF });
+  // console.log("deltaF: " + deltaF + ", totalWork: " + this.totalWork);
 }
 
 function performCalculation(velocity) {
   calculation = new CalculationPerformer(velocity);
   calculation = null;
-  setImmediate(performCalculation, velocity);
+  setTimeout(performCalculation, 50, velocity);
 }
 
-[1e-2,1e-1,1,1e1,1e2].forEach(function(velocity) {
+velocities = [1e-2, 1e-1, 1, 1e1, 1e2];
+[1e2].forEach(function(velocity) {
   performCalculation(velocity);
 });
+
+// calculation = new CalculationPerformer(1e2);
 
 io.on('connection', function(socket) {
   var socketId = socket.id;
