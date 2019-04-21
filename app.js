@@ -12,7 +12,7 @@ var server = app.listen(app.get('port'), function() {
   console.log("Express server listening on port " + app.get('port'));
 });
 var io = require('socket.io')(server);
-io.set('origins', 'https://tosiaki.github.io:80');
+io.origins("*:*");
 
 var path = require('path');
 var cookieParser = require('cookie-parser');
