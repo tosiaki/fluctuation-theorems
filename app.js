@@ -1,5 +1,8 @@
+var events = require('events');
+
 var createError = require('http-errors');
 var express = require('express');
+// var io = require('socket.io')(server);
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -83,7 +86,7 @@ function state0probabilityFrom0(position) {
 }
 
 function state0probabilityFrom1(position) {
-  return (W21(position)-W21(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
+  return (W12(position)-W12(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
 }
 
 function state0probabilityFunction(state) {
@@ -112,16 +115,24 @@ function helmholtzFreeEnergy(position) {
   return -Math.log(partitionFunction(position));
 }
 
-setImmediate(() => {
-  totalWork = 0;
-  state = Math.random() < n0probability;
-  step = 0;
-  while (step < maxSteps) {
-    totalWork += energyFunction(state)(positionAtStep(step)) - energyFunction(state)(positionAtStep(step+1));
-    step++;
-    state = Math.random() < state0probabilityFunction(state)(positionAtStep(step));
+function CalculationPerformer() {
+  this.totalWork = 0;
+  this.state = Math.random() > n0probability;
+  this.step = 0;
+  while (this.step < maxSteps) {
+    rand = Math.random();
+    this.totalWork += energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1));
+    this.step++;
+    // console.log("State: " + this.state + ", Step: " + this.step + ", Random Number: " + rand + ", Probability: " + state0probabilityFunction(this.state)(positionAtStep(this.step)));
+    this.state = rand > state0probabilityFunction(this.state)(positionAtStep(this.step));
   }
-  energies.push(totalWork);
-  console.log(totalWork);
-  console.log(totalWork+helmholtzFreeEnergy(xm)-helmholtzFreeEnergy(x0));
-});
+  energies.push(this.totalWork);
+  console.log(this.totalWork+helmholtzFreeEnergy(xm)-helmholtzFreeEnergy(x0));
+}
+
+function performCalculation() {
+  calculation = new CalculationPerformer();
+  setImmediate(performCalculation);
+}
+
+performCalculation();
