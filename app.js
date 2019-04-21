@@ -2,15 +2,20 @@ var events = require('events');
 
 var createError = require('http-errors');
 var express = require('express');
-// var io = require('socket.io')(server);
+var app = express();
+
+app.set('port', process.env.PORT || 3000);
+var server = app.listen(app.get('port'), function() {
+  console.log("Express server listening on port " + app.get('port'));
+});
+var io = require('socket.io')(server);
+
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-
-var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -55,7 +60,6 @@ v=1e-2;
 
 maxSteps = M*5;
 deltaT = (xm-x0)/(v*M);
-energies = [];
 
 function energy0(position) {
   return 0.5*k1*position*position-epsilon;
@@ -115,24 +119,22 @@ function helmholtzFreeEnergy(position) {
   return -Math.log(partitionFunction(position));
 }
 
-function CalculationPerformer() {
+function CalculationPerformer(velocity) {
   this.totalWork = 0;
   this.state = Math.random() > n0probability;
   this.step = 0;
   while (this.step < maxSteps) {
-    rand = Math.random();
     this.totalWork += energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1));
     this.step++;
-    // console.log("State: " + this.state + ", Step: " + this.step + ", Random Number: " + rand + ", Probability: " + state0probabilityFunction(this.state)(positionAtStep(this.step)));
-    this.state = rand > state0probabilityFunction(this.state)(positionAtStep(this.step));
+    this.state = Math.random() > state0probabilityFunction(this.state)(positionAtStep(this.step));
   }
-  energies.push(this.totalWork);
-  console.log(this.totalWork+helmholtzFreeEnergy(xm)-helmholtzFreeEnergy(x0));
 }
 
-function performCalculation() {
-  calculation = new CalculationPerformer();
+function performCalculation(velocity) {
+  calculation = new CalculationPerformer(velocity);
   setImmediate(performCalculation);
 }
 
-performCalculation();
+[1e-2,1e-1,1,1e1,1e2].forEach(function(velocity) {
+  performCalculation(velocity);
+});
