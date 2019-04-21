@@ -141,6 +141,7 @@ function CalculationPerformer(velocity) {
 
 function performCalculation(velocity) {
   calculation = new CalculationPerformer(velocity);
+  calculation = null;
   setImmediate(performCalculation);
 }
 
