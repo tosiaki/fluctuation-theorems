@@ -1,4 +1,4 @@
-var createError = require('http-errors');
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -50,6 +50,7 @@ xm=64;
 
 v=1e-2;
 
+maxSteps = M*5;
 deltaT = (xm-x0)/(v*M);
 energies = [];
 
@@ -62,20 +63,19 @@ function energy1(position) {
 }
 
 function energyFunction(state) {
-  if (state===0) {
+  if (state===false) {
     return energy0;
-  }
-  else {
+  } else {
     return energy1;
   }
 }
 
 function W12(position) {
-  return omega*Math.exp(energy2(position));
+  return omega*Math.exp(energy1(position));
 }
 
 function W21(position) {
-  return omega*Math.exp(energy1(position));
+  return omega*Math.exp(energy0(position));
 }
 
 function state0probabilityFrom0(position) {
@@ -86,11 +86,11 @@ function state0probabilityFrom1(position) {
   return (W21(position)-W21(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
 }
 
-function state0probabilityFunction(state)
-  if (state===0) {
+function state0probabilityFunction(state) {
+  if (state===false) {
     return state0probabilityFrom0;
   } else {
-    return state1probabilityFrom1;
+    return state0probabilityFrom1;
   }
 }
 
@@ -104,6 +104,14 @@ function equilibriumProbability(position) {
 
 n0probability = equilibriumProbability(x0);
 
+function partitionFunction(position) {
+  return Math.exp(-energy0(position)) + Math.exp(-energy1(position));
+}
+
+function helmholtzFreeEnergy(position) {
+  return -Math.log(partitionFunction(position));
+}
+
 setImmediate(() => {
   totalWork = 0;
   state = Math.random() < n0probability;
@@ -114,4 +122,6 @@ setImmediate(() => {
     state = Math.random() < state0probabilityFunction(state)(positionAtStep(step));
   }
   energies.push(totalWork);
-}
+  console.log(totalWork);
+  console.log(totalWork+helmholtzFreeEnergy(xm)-helmholtzFreeEnergy(x0));
+});
