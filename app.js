@@ -9,7 +9,8 @@ app.use(cors());
 app.set('port', process.env.PORT || 3000);
 
 var server = require('http').createServer(app);
-var io = require('socket.io')(server, { origins: '*:*' });
+var io = require('socket.io')(server);
+io.origins("*:*");
 
 var path = require('path');
 var cookieParser = require('cookie-parser');
