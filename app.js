@@ -1,4 +1,4 @@
-var createError = require('http-errors');
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -39,3 +39,79 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+k1 = 0.05;
+k2 = 0.01;
+epsilon = 80;
+omega = 5e-9;
+M=100;
+x0=62.5;
+xm=64;
+
+v=1e-2;
+
+deltaT = (xm-x0)/(v*M);
+energies = [];
+
+function energy0(position) {
+  return 0.5*k1*position*position-epsilon;
+}
+
+function energy1(position) {
+  return 0.5*k2*position*position;
+}
+
+function energyFunction(state) {
+  if (state===0) {
+    return energy0;
+  }
+  else {
+    return energy1;
+  }
+}
+
+function W12(position) {
+  return omega*Math.exp(energy2(position));
+}
+
+function W21(position) {
+  return omega*Math.exp(energy1(position));
+}
+
+function state0probabilityFrom0(position) {
+  return (W12(position)+W21(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
+}
+
+function state0probabilityFrom1(position) {
+  return (W21(position)-W21(position)*Math.exp(-deltaT*(W12(position)+W21(position))))/(W12(position)+W21(position));
+}
+
+function state0probabilityFunction(state)
+  if (state===0) {
+    return state0probabilityFrom0;
+  } else {
+    return state1probabilityFrom1;
+  }
+}
+
+function positionAtStep(step) {
+  return Math.min(x0 + (xm-x0)*step/M,xm);
+}
+
+function equilibriumProbability(position) {
+  return (Math.exp(-0.5*k1*position*position-epsilon))/(Math.exp(-0.5*k1*position*position-epsilon)+Math.exp(-0.5*k2*position*position));
+}
+
+n0probability = equilibriumProbability(x0);
+
+setImmediate(() => {
+  totalWork = 0;
+  state = Math.random() < n0probability;
+  step = 0;
+  while (step < maxSteps) {
+    totalWork += energyFunction(state)(positionAtStep(step)) - energyFunction(state)(positionAtStep(step+1));
+    step++;
+    state = Math.random() < state0probabilityFunction(state)(positionAtStep(step));
+  }
+  energies.push(totalWork);
+}
