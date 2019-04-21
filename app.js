@@ -122,6 +122,8 @@ function helmholtzFreeEnergy(position) {
   return -Math.log(partitionFunction(position));
 }
 
+deltaF = helmholtzFreeEnergy(xm)-helmholtzFreeEnergy(x0);
+
 function CalculationPerformer(velocity) {
   deltaT = (xm-x0)/(velocity*M);
   this.totalWork = 0;
@@ -134,7 +136,7 @@ function CalculationPerformer(velocity) {
     this.state = Math.random() > state0probabilityFunction(this.state)(positionAtStep(this.step), deltaT);
     this.workHistory.push(this.totalWork);
   }
-  io.emit("calculationResult", { velocity: velocity, workHistory: this.workHistory, totalWork: this.totalWork });
+  io.emit("calculationResult", { velocity: velocity, workHistory: this.workHistory, totalWork: this.totalWork, entropy: -this.totalWork - deltaF });
 }
 
 function performCalculation(velocity) {
