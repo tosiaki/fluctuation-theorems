@@ -148,7 +148,7 @@ function CalculationPerformer(velocity) {
 function performCalculation(velocity) {
   calculation = new CalculationPerformer(velocity);
   calculation = null;
-  setTimeout(performCalculation, 50, velocity);
+  setTimeout(performCalculation, 500, velocity);
 }
 
 velocities = [1e-2, 1e-1, 1, 1e1, 1e2];
