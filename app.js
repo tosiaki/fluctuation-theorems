@@ -62,7 +62,7 @@ xm=64;
 
 v=1e-2;
 
-maxSteps = M*5;
+maxSteps = M*1.5;
 
 function energy0(position) {
   return 0.5*k1*position*position-epsilon;
@@ -148,7 +148,7 @@ function CalculationPerformer(velocity) {
 function performCalculation(velocity) {
   calculation = new CalculationPerformer(velocity);
   calculation = null;
-  setTimeout(performCalculation, 500, velocity);
+  setTimeout(performCalculation, 150, velocity);
 }
 
 velocities = [1e-2, 1e-1, 1, 1e1, 1e2];
