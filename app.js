@@ -62,8 +62,6 @@ xm=64;
 
 v=1e-2;
 
-maxSteps = M*1.5;
-
 function energy0(position) {
   return 0.5*k1*position*position-epsilon;
 }
@@ -132,7 +130,7 @@ function CalculationPerformer(velocity) {
   // console.log("Initial random: " + rand + ", n0probability: " + n0probability);
   this.state = rand > n0probability;
   this.step = 0;
-  while (this.step < maxSteps) {
+  while (this.step < M) {
     this.totalWork += (energyFunction(this.state)(positionAtStep(this.step)) - energyFunction(this.state)(positionAtStep(this.step+1)));
     this.step++;
     rand = Math.random();
