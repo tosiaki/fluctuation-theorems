@@ -139,7 +139,7 @@ function CalculationPerformer(velocity) {
     probability = state0probabilityFunction(this.state)(positionAtStep(this.step), this.deltaT);
     // console.log("State: " + this.state + ", Random Number: " + rand + ", Probability: " + probability + ", Position: " + positionAtStep(this.step));
     this.state = rand > probability;
-    this.workHistory.push(this.totalWork);
+    this.workHistory.push({ work: this.totalWork, position: positionAtStep(this.step) });
   }
   io.emit("calculationResult", { velocity: velocity, workHistory: this.workHistory, totalWork: this.totalWork, entropy: -this.totalWork - deltaF });
   // console.log("deltaF: " + deltaF + ", totalWork: " + this.totalWork);
